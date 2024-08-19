@@ -1,70 +1,260 @@
-# Getting Started with Create React App
+## useState
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+* set function receives previous value in argument
+```js
+function increment() {
+ setCount(prevCount=> prevCount+1)
+} 
+```
 
-## Available Scripts
 
-In the project directory, you can run:
 
-### `npm start`
+## useReducer
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* Similar to useState
+* allow more complex way to handle state. We can change state based on action we send to useReducer
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+* generally we are dealing with object as state in useReducer, as simple value can be handle easily with usetate
 
-### `npm test`
+* it takes two argumnet
+    * reducer -> function which handle the state change
+    * initailValue -> initial object
+* UseReducer return two items
+    * state -> current state
+    * dispatch -> similar to setState. Use to call reducer function, which updates the state.
+* reducer function takes two argument
+    * initial state -> we pass the current state, which can be utilized to compare and update state
+    * action -> this is what we pass on dispatch function call. According to the action we receieve, we perform state manipulation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#### We can simply call dipatch without argument also, in case we do not have multiple action type
+* dispatch is just a trigger that we create to call reducer function.    
+```js
+const [state,dispatch] = useReducer(reducer,{count:0})
+function reducer(state,action) {
+    // we are not using action here
+    return {count:state.count+1}
+}
 
-### `npm run build`
+function increment() {
+    dispatch()
+}
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+* dispatch with argument   
+```js
+const [state,dispatch] = useReducer(reducer,{count:0})
+function reducer(state,action) {
+    switch(action.type)// we are receiving type from dispatch 
+    {
+        case : 'increment'
+        return {count:state.count+1}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+        case:'decrement'
+        return {count:state.count-1}
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+        default 
+        return state
+    }
+}
 
-### `npm run eject`
+function increment() {
+    dispatch({type:'increment'})
+}
+function decrement() {
+    dispatch({type:'decrement'})
+}
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+* Reducer function doesnot have access to other state directly. We need to pass data via actions.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```js
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+  let [name, setName] = useState('');
+  let [toDos,dispatch ]= useReducer(reducer,[])
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+  function reducer(toDos,action) {  //toDos = current state
+    switch(action.type) {
+      case 'add-todo' :
+        //returning new state, which can be accesible via toDos
+        return[...toDos,addNewToDo(action.payload.name)] //accessing data via action.payload
+      default:
+        {
+          console.log("action dispatched dfault")
+          return toDos}
 
-## Learn More
+    }
+  }
+  function addNewToDo(name) {
+    return {id:Date.now(),data:name}
+  }
+  
+  function handleSubmit(e) {
+    e.preventDefault()
+    dispatch({type:'add-todo',payload:{name}}) //sending data in action
+    setName('') // re-setting data
+  }
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+  
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  return (
+    <>
+      <div className="App" style={{ margin: "10px" }}>
+        <button style={{ margin: "10px" }} onClick={increment}>
+          +
+        </button>
+        {count}
+        <button style={{ margin: "10px" }} onClick={decrement}>
+          -
+        </button>
+      </div>
+      <div>
+        <form onSubmit={handleSubmit}>
+          <input type='text' value={name} onChange={(e)=>{setName(e.target.value)}} />
+        </form>
+        <p>
+          {toDos.map(todo=>
+            <p> {todo.id}  -   {todo.data}</p>
+          )}
+        </p>
+      </div>
+    </>
+  );
+  ```
 
-### Code Splitting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+  #### useContext
 
-### Analyzing the Bundle Size
+* Below is simplest implementation 
+* need to create a context -- export const ThemeContext = React.createContext(); 
+* wrap child to which you want to have access to value with context.Provide
+* access the value using hook or context.Consumer
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```js
+import React, { Component, useContext, useState } from "react";
 
-### Making a Progressive Web App
+export const ThemeContext = React.createContext(); 
+// creating  and exporting context 
+// in child component we need to import this to have access to passed values.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+function ContextIndex() {
+  const [dark, setDark] = useState(false);
+  function setTheme() {
+    setDark((prevDarkv) => !prevDarkv);
+  }
+  return (
+    <div>
+      <ThemeContext.Provider value={dark}>
+        {
+        // wrapping below component with context and pass value in context.
+        // all the child component will have access to the value passed in contect wrapper
+        }
+        <button onClick={setTheme}>Toggle </button>
+        <FuncBasedComponent/>
+        <ClassContextComponent />
+      </ThemeContext.Provider>
+    </div>
+  );
+}
 
-### Advanced Configuration
+export default ContextIndex;
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+// class based component with access to context values
+export class ClassContextComponent extends Component {
+    themeStyle(dark) {
+      return {
+        backgroundColor: dark ? "#ccc" : "#333",
+        color:dark? '#333':'#ccc',
+        padding:'2rem',
+        margin: "2rem",
+      };
+    }
+  
+    render() {
+      //needs to import themecontext if used in different file
+      return (
+            // In class based component we need to wrap part with consumer to provide access to value
+            // themecolor is value passed by context wrapper.
+        <ThemeContext.Consumer> 
+            
+          {(themeColor) => { 
+            return <div style={this.themeStyle(themeColor)}>ClassTheme</div>;
+          }}
+        </ThemeContext.Consumer>
+      );
+    }
+  }
 
-### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+  export function FuncBasedComponent () {
+    const theme = useContext(ThemeContext) // fetching value from parent context wrapper
+    const themeStyle  = {
+          backgroundColor: theme ? "#ccc" : "#333",
+          color:theme? '#333':'#ccc',
+          padding:'2rem',
+          margin: "2rem",
+        };
+      
+    return (
+        <div style = {themeStyle}>
+            function based component
+        </div>
+    )
+  }
 
-### `npm run build` fails to minify
+  ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+  * Refactor code for useContext to move all context related functionality to one file and render children and pass only values and function to children.
+  * all the logic of function is written in context file rather than in children.
+  * children will just call the function and use the value.
+
+```js
+import React, { useContext, useState } from "react";
+
+export const ThemeContext = React.createContext();
+export function useTheme() {
+  return useContext(ThemeContext);
+}
+function RefactoruseContext() {
+  return (
+    <ThemeProvider>
+      <Children />
+    </ThemeProvider>
+  );
+}
+
+export function ThemeProvider({ children }) {
+  const [darkTheme, setDarkTheme] = useState(false);
+  const toggleTheme = () => {
+    console.log('toggle')
+    setDarkTheme((prev) => !prev);
+  };
+
+  return (
+    <div>
+      <ThemeContext.Provider value={{ toggleTheme, darkTheme }}>
+        {children}
+      </ThemeContext.Provider>
+    </div>
+  );
+}
+
+export function Children() {
+  const { toggleTheme, darkTheme } = useTheme();
+  const themeStyle = {
+    backgroundColor: darkTheme ? "#ccc" : "#333",
+    color: darkTheme ? "#333" : "#ccc",
+    padding: "2rem",
+    margin: "2rem",
+  };
+  console.log(darkTheme)
+
+  return (
+    <>
+      <button onClick={toggleTheme}>Toggle theme</button>
+      <div style={themeStyle}>Refactor useContext Code</div>
+    </>
+  )
+}
+
+export default RefactoruseContext;
+```
