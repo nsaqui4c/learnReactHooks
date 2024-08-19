@@ -2,6 +2,7 @@ import { useReducer, useState } from "react";
 import Reducer from "./useReducer/reducer";
 import ContextIndex from "./useContext/contextIndex";
 import RefactoruseContext from "./useContext/RefactoruseContext";
+import MemoIndex from "./memoUseCallbackUseMemo/index";
 
 function App() {
   let [count, setCount] = useState(0);
@@ -33,6 +34,10 @@ function App() {
       </div>
       <div style={{ margin: "10px",padding: "10px",border:'3px solid #ccc' }}>
         <RefactoruseContext/>
+      </div>
+
+      <div style={{ margin: "10px",padding: "10px",border:'3px solid #ccc' }}>
+        <MemoIndex/>
       </div>
 
     </>

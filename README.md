@@ -258,3 +258,102 @@ export function Children() {
 
 export default RefactoruseContext;
 ```
+
+## memo, useCallback, useMemo
+
+* MEMO
+
+    * We use memo when we do not want child component to re-render on rendering of parent component
+
+* useCallback
+    * but if we pass any object or function to child, *memo will fail* as memo only does shallow comparision, and re-rendering on parent create new object/function, causing memo to think this is a new variable.
+
+    * In this case we need to wrap our function in useCallback to prevent re-rendering child component
+
+* useMemo
+    * In the scenarion where we do not want an expensive function to run again unless dependency changes.
+
+* memo and callback is for prevent rendering child component, while useMemo is to prevent function executing.
+
+```js
+import React, { useCallback, useMemo, useState } from 'react'
+import Plain from './plain'
+import Memo from './memo'
+import BrokenMemo from './BrokenMemo'
+
+function MemoIndex() {
+    const [counter,changeCounter] = useState(0)
+    function increase(){
+        changeCounter(prev=>prev+1)
+    }
+    function decrease(){
+        changeCounter(prev=>prev-1)
+    }
+    const arr = [1,2,3,4,5,6,7,8,9,10]
+    const memoizedChangeNumber = useCallback(()=>changeNumber,[])
+    function changeNumber() {
+        // any function inside it
+    }
+
+    const memoizedExpensive = useMemo(()=> expensive(),[...arr] )
+    function expensive() {
+        console.log("EXPENSIVE FUNCTION RUNNING")
+        return Math.max(...arr)
+    }
+  return (
+    <>
+        <div>
+            <span ><button onClick={increase} style={{margin: '5px'}}>+</button> {counter}<button onClick={decrease} style={{margin: '5px'}}>-</button></span>
+        </div>
+        <Plain/> {/* Render every time when counter changes in main page */}
+        <Memo/>  {/* Because of memo, does not render on counter changes */}
+        <BrokenMemo func={changeNumber} data={'NOT memoized func passed '}/>  {/* Every render create new variable for fumction, memo thinks it is a new variable and re-render */}
+        <BrokenMemo func={memoizedChangeNumber} data={'YES Memoized func'}/>  {/* Function is memoized, hence no re-rendering */}
+
+        <div>
+            {memoizedExpensive}
+        </div>
+    </>
+  )
+}
+
+export default MemoIndex
+
+///////////////////////
+import React from 'react'
+
+function Plain() {
+    console.log("MEMOIZATION - without any Memoization")
+  return (
+    <div>Plain without any Memoization</div>
+  )
+}
+
+export default Plain
+
+////////////////////////
+
+import React, {memo} from 'react'
+
+function Memo() {
+  console.log("MEMOIZATION - WITH MEMO")  
+  return (
+    <div>memo</div>
+  )
+}
+
+export default memo(Memo)
+
+//////////////////////
+
+import React , {memo}from 'react'
+
+function BrokenMemo({data}) {
+    console.log(`MEMOIZATION - ${data}`)
+  return (
+    <div>{data}</div>
+  )
+}
+
+export default memo(BrokenMemo)
+```

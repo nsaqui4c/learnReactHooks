@@ -38,6 +38,7 @@ function Reducer() {
 
   return (
     <div>
+      <p>Please enter text here</p>
       <form onSubmit={handleSubmit}>
         <input type="text" value={name} onChange={(e) => {
             setName(e.target.value);
